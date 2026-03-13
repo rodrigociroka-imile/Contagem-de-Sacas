@@ -17,5 +17,30 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+// Função para enviar contagem ao Firebase
+async function enviarContagem(tipo, unidades) {
+  try {
+    const contagemRef = ref(database, 'contagens');
+    await push(contagemRef, {
+      tipo,
+      unidades,
+      data: new Date().toISOString()
+    });
+    return true;
+  } catch (e) {
+    console.error('Erro ao enviar contagem:', e);
+    return false;
+  }
+}
+
+// Função para gerar QRCode (opcional, pode ser removida se não usada)
+function gerarQRCode(elementId, texto) {
+  const el = document.getElementById(elementId);
+  if (el) {
+    el.innerHTML = '';
+    new window.QRCode(el, { text: texto, width: 100, height: 100 });
+  }
+}
+
 // Exportar
-export { database, ref, push, update, onValue, remove, set, get };
+export { database, ref, push, update, onValue, remove, set, get, enviarContagem, gerarQRCode };
