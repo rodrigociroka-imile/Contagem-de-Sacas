@@ -3,8 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <title>Sistema Profissional de Contagem de Sacas</title>
-    <link rel="shortcut icon" href="./img/CDC-ESTOQUE.png">
+    <link rel="shortcut icon" href="./img/CDC-ESTOQUE.png" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module">
+  import { enviarContagem, gerarQRCode } from "./bd.js";
+  import { database, ref, update, onValue, remove, push } from "./bd.js";
+
+  // Gera todos os QR Codes ao carregar a página
+  window.addEventListener("load", () => {
+    gerarQRCode("qr_branca",  "BRANCA-280");
+    gerarQRCode("qr_amarela", "AMARELA-280");
+    gerarQRCode("qr_azul",    "AZUL-280");
+    gerarQRCode("qr_fm",      "FM-600");
+    gerarQRCode("qr_pa",      "PA-450");
+    gerarQRCode("qr_cdgu",    "CDGU-450");
+  });
+
+  // Scanner (mantém exatamente como estava)
+  const tabela = document.getElementById("tabela");
+  document.getElementById("scanner").addEventListener("keypress", async function(e) {
+    if (e.key === "Enter") {
+      const codigo = this.value.trim();
+      if (!codigo) return;
+
+      const [tipo, unidades] = codigo.split("-").map(s => s.trim());
+      
+      const agora = new Date();
+      tabela.innerHTML += `
+        <tr>
+          <td>${tipo}</td>
+          <td>${unidades}</td>
+          <td>${agora.toLocaleDateString()}</td>
+          <td>${agora.toLocaleTimeString()}</td>
+          <td>Enviado</td>
+        </tr>`;
+
+      // Tenta enviar para o Firebase
+      const sucesso = await enviarContagem(tipo, unidades);
+      if (!sucesso) {
+        // Opcional: mostrar feedback de erro na linha
+        const ultimaLinha = tabela.lastElementChild;
+        if (ultimaLinha) ultimaLinha.cells[4].textContent = "Erro";
+      }
+
+      this.value = "";
+      this.focus();
+    }
+  });
+</script>
 
     <style>
       * {
@@ -270,17 +316,7 @@
     </div>
 
     <script>
-      function gerarQR() {
-        new QRCode(document.getElementById("qr_branca"), "BRANCA-280");
-        new QRCode(document.getElementById("qr_amarela"), "AMARELA-280");
-        new QRCode(document.getElementById("qr_azul"), "AZUL-280");
-        new QRCode(document.getElementById("qr_fm"), "FM-600");
-        new QRCode(document.getElementById("qr_pa"), "PA-450");
-        new QRCode(document.getElementById("qr_cdgu"), "CDGU-450");
-      }
-      gerarQR();
-
-      let tabela = document.getElementById("tabela");
+      
 
       document
         .getElementById("scanner")
