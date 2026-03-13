@@ -4,13 +4,14 @@ import { getDatabase, ref, push, update, onValue, remove, set, get } from 'https
 
 // Configuração do Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAuKRaFDaViCQj72lQgLH7HDFUxOk43fss",
-  authDomain: "insumo-16085.firebaseapp.com",
-  projectId: "insumo-16085",
-  storageBucket: "insumo-16085.firebasestorage.app",
-  messagingSenderId: "706106422021",
-  appId: "1:706106422021:web:4e6b4fafda82104df93d6c",
-  measurementId: "G-1Y7ZRBX658"
+  apiKey: "AIzaSyB8lqLFl0agRrisPtjsmoWxr0nbTagiaqQ",
+  authDomain: "d2d-cdc.firebaseapp.com",
+  databaseURL: "https://d2d-cdc-default-rtdb.firebaseio.com",
+  projectId: "d2d-cdc",
+  storageBucket: "d2d-cdc.firebasestorage.app",
+  messagingSenderId: "809375112221",
+  appId: "1:809375112221:web:c80428315e9d084bd53af4",
+  measurementId: "G-V876KE79ZC"
 };
 
 // Inicializar Firebase
