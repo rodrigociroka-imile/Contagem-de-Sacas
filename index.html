@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="./img/CDC-ESTOQUE.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- Estilos melhorados (CSS) -->
+    <!-- Estilos melhorados (CSS) - mantidos intactos -->
     <style>
       :root {
         --primary-color: #1d4ed8;
@@ -26,7 +26,6 @@
       
       .container { max-width: 1200px; margin: auto; }
       
-      /* Cabeçalho */
       header { 
         background: var(--card-bg); 
         color: var(--primary-color); 
@@ -39,7 +38,6 @@
       }
       header h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-      /* Sistema de Abas */
       .tabs {
         display: flex;
         gap: 10px;
@@ -69,7 +67,6 @@
 
       @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-      /* Bipagem */
       .scanner-box { 
         background: var(--card-bg); 
         padding: 30px; 
@@ -92,7 +89,6 @@
       }
       #scanner:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.2); }
 
-      /* Relatório e Tabela */
       .relatorio { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
       .relatorio h2 { margin-bottom: 20px; color: var(--text-dark); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
       
@@ -101,7 +97,84 @@
       td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: center; color: var(--text-dark); }
       tr:hover td { background-color: #f1f5f9; }
       
-      /* Cards das Etiquetas */
+      .resumo-contagem {
+  background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0 30px 0;
+  box-shadow: 0 2px 8px rgba(147, 197, 253, 0.3);
+}
+
+.resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 24px;
+  margin-bottom: 20px;
+}
+
+.item {
+  background: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  text-align: center;
+  border: 1px solid #bfdbfe;
+}
+
+.label {
+  display: block;
+  font-size: 0.95em;
+  color: #4b5563;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.valor {
+  display: block;
+  font-size: 1.8em;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.total-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1d4ed8;
+  color: white;
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.total-label {
+  opacity: 0.95;
+}
+
+.total-valor {
+  font-size: 1.5em;
+}
+
+/* Ajuste para impressão */
+@media print {
+  .resumo-contagem {
+    border: 1px solid #000;
+    background: #fff;
+    box-shadow: none;
+  }
+  .total-linha {
+    background: #000;
+    color: white;
+  }
+  .item {
+    border: 1px solid #666;
+  }
+}
+
+
       .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
       .card { 
         background: var(--card-bg); 
@@ -116,10 +189,8 @@
       .card h3 { font-size: 20px; color: var(--text-dark); margin-bottom: 5px; }
       .card p { font-size: 16px; color: var(--text-muted); margin-bottom: 20px; font-weight: 500; }
       
-      /* Centraliza o QR Code gerado pelo script */
       .card div { display: flex; justify-content: center; margin-bottom: 20px; } 
 
-      /* Botões */
       button { background: var(--primary-color); color: #fff; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 15px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
       button:hover { background: var(--primary-hover); }
       .btn-danger { background: var(--danger-color); }
@@ -128,21 +199,19 @@
       .acoes-relatorio { margin-top: 30px; display: flex; justify-content: center; gap: 15px; }
       .linha-assinatura { margin-top: 50px; font-size: 16px; color: var(--text-dark); text-align: center; }
 
-      /* Impressão */
       @media print {
         header, .tabs, .scanner-box, .acoes-relatorio { display: none !important; }
         body { background: #fff; padding: 0; }
         .relatorio { box-shadow: none; border: none; padding: 0; }
+        .resumo-contagem { border: 1px solid #000; background: #fff; }
         table { border: 1px solid #000; }
         th, td { border: 1px solid #000; padding: 8px; }
       }
     </style>
 
-    <!-- Importa o Firebase e o módulo bd.js -->
     <script type="module">
-      import { database, ref, push, update, onValue, remove, set, get } from './bd.js';
+      import { database, ref, push, onValue, set } from './bd.js';
 
-      // --- LÓGICA DE ABAS (Adicionado) ---
       window.abrirAba = function(nomeAba) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -150,29 +219,67 @@
         document.getElementById(nomeAba).classList.add('active');
         event.currentTarget.classList.add('active');
 
-        // Se abrir a aba de bipagem, foca no input automaticamente
         if(nomeAba === 'aba-bipagem') {
           document.getElementById('scanner').focus();
         }
       }
 
-      // Variáveis globais
       const tabela = document.getElementById("tabela");
       const inputScanner = document.getElementById("scanner");
-
-      // Referência ao nó de contagens no Firebase
       const contagensRef = ref(database, 'contagens');
 
-      // Função que atualiza a tabela com os dados do Firebase
+      // --------------------------------------------------
+      //   CONTADORES PARA O RESUMO
+      // --------------------------------------------------
+      function atualizarResumo(dados) {
+        const contagem = {
+          branca:  0,
+          fm:      0,
+          amarela: 0,
+          azul:    0,
+          pa:      0,
+          cdgu:    0
+        };
+
+        if (dados) {
+          Object.values(dados).forEach(item => {
+            const tipo = (item.tipo || "").toUpperCase().trim();
+            const qtd = Number(item.unidades) || 0;
+
+            if (tipo.includes("BRANCA"))   contagem.branca  += qtd;
+            else if (tipo === "FM")        contagem.fm      += qtd;
+            else if (tipo.includes("AMARELA")) contagem.amarela += qtd;
+            else if (tipo.includes("AZUL"))    contagem.azul    += qtd;
+            else if (tipo === "PA")            contagem.pa      += qtd;
+            else if (tipo === "CDGU")          contagem.cdgu    += qtd;
+          });
+        }
+
+        const total = Object.values(contagem).reduce((a, b) => a + b, 0);
+
+        // Atualiza os valores diretamente para evitar flicker e re-render desnecessário
+        document.getElementById("cont-branca").textContent  = contagem.branca || 0;
+        document.getElementById("cont-fm").textContent      = contagem.fm || 0;
+        document.getElementById("cont-amarela").textContent = contagem.amarela || 0;
+        document.getElementById("cont-azul").textContent    = contagem.azul || 0;
+        document.getElementById("cont-pa").textContent      = contagem.pa || 0;
+        document.getElementById("cont-cdgu").textContent    = contagem.cdgu || 0;
+        document.getElementById("cont-total").textContent   = total.toLocaleString("pt-BR");
+      }
+      
+
       function atualizarTabela(snapshot) {
-        tabela.innerHTML = ""; // limpa antes de reconstruir
+        tabela.innerHTML = "";
 
         if (!snapshot.exists()) {
           tabela.innerHTML = '<tr><td colspan="5" style="padding: 30px; color: #6b7280;">Nenhuma contagem registrada no momento.</td></tr>';
+          atualizarResumo(null);
           return;
         }
 
         const dados = snapshot.val();
+        atualizarResumo(dados);
+
         Object.entries(dados).forEach(([id, item]) => {
           const linha = document.createElement("tr");
           linha.innerHTML = `
@@ -186,12 +293,10 @@
         });
       }
 
-      // Escuta todas as mudanças no nó /contagens em tempo real
       onValue(contagensRef, (snapshot) => {
         atualizarTabela(snapshot);
       });
 
-      // Quando pressionar Enter no campo de scanner
       inputScanner.addEventListener("keypress", async function (e) {
         if (e.key === "Enter") {
           const codigo = this.value.trim();
@@ -205,7 +310,6 @@
           const tipo = partes[0] || "DESCONHECIDO";
           const unidades = partes[1] || "?";
 
-          // Salva no Firebase
           try {
             await push(contagensRef, {
               tipo,
@@ -215,29 +319,26 @@
               timestamp: agora.getTime(),
               codigoOriginal: codigo
             });
-            // Sucesso → limpa o input
             this.value = "";
           } catch (error) {
-            console.error("Erro ao salvar no Firebase:", error);
-            alert("Erro ao registrar a contagem. Verifique o console.");
+            console.error("Erro ao salvar:", error);
+            alert("Erro ao registrar. Veja o console.");
           }
         }
       });
 
-      // Limpar relatório (apaga tudo do nó contagens)
       window.limparRelatorio = async function () {
-        if (!confirm("⚠️ ATENÇÃO: Deseja realmente LIMPAR TODO o relatório? Essa ação não pode ser desfeita.")) return;
+        if (!confirm("⚠️ Deseja realmente LIMPAR TODO o relatório?")) return;
 
         try {
           await set(contagensRef, null);
-          alert("Relatório limpo com sucesso!");
+          alert("Relatório limpo!");
         } catch (error) {
           console.error("Erro ao limpar:", error);
           alert("Erro ao limpar relatório.");
         }
       };
 
-      // --- AS FUNÇÕES ORIGINAIS DE QR E IMPRESSÃO FORAM MANTIDAS INTACTAS ---
       function gerarQR() {
         new QRCode(document.getElementById("qr_branca"), "BRANCA-280");
         new QRCode(document.getElementById("qr_amarela"), "AMARELA-280");
@@ -247,38 +348,27 @@
         new QRCode(document.getElementById("qr_cdgu"), "CDGU-450");
       }
       
-      // Pequeno delay para garantir que as divs foram carregadas antes de gerar o QR
       setTimeout(gerarQR, 100);
 
       window.imprimirEtiqueta = function(tipo, unidades) {
         let janela = window.open("", "", "width=1000,height=1000");
         janela.document.write(`
 <style>
-  body {
-    font-family: Arial;
-    text-align: center;
-    padding-top: 40px;
-  }
+  body { font-family: Arial; text-align: center; padding-top: 40px; }
   h1 { font-size: 40px; margin-bottom: 10px; }
   p  { font-size: 24px; margin-bottom: 30px; }
   #qr { display: flex; justify-content: center; }
 </style>
-
 <h1>${tipo}</h1>
 <p>${unidades} unidades</p>
 <div id="qr"></div>
         `);
 
         setTimeout(() => {
-          new QRCode(janela.document.getElementById("qr"), tipo + "-" + unidades, {
-            width: 60,
-            height: 60
-          });
+          new QRCode(janela.document.getElementById("qr"), tipo + "-" + unidades, { width: 60, height: 60 });
         }, 200);
 
-        setTimeout(() => {
-          janela.print();
-        }, 500);
+        setTimeout(() => janela.print(), 500);
       };
 
       window.gerarRelatorio = function() {
@@ -300,14 +390,11 @@
         <h1>📦 Gestão - Contagem de Sacas</h1>
       </header>
 
-      <!-- Navegação das Abas -->
       <div class="tabs">
-        <!-- O botão "Bipagem" já vem com a classe 'active' para ser o primeiro -->
         <button class="tab-btn active" onclick="abrirAba('aba-bipagem')">📡 Bipagem e Relatório</button>
-        <button class="tab-btn" onclick="abrirAba('aba-etiquetas')">🏷️ Etiquetas </button>
+        <button class="tab-btn" onclick="abrirAba('aba-etiquetas')">🏷️ Etiquetas</button>
       </div>
 
-      <!-- ABA 1: BIPAGEM E RELATÓRIO (Aba padrão) -->
       <div id="aba-bipagem" class="tab-content active">
         <div class="scanner-box">
           <h2>Bipagem pelo Coletor</h2>
@@ -317,6 +404,42 @@
 
         <div class="relatorio">
           <h2>📊 Relatório de Contagem</h2>
+
+          <!-- NOVO BLOCO: RESUMO DE CONTAGEM -->
+          <div id="resumo-contagem" class="resumo-contagem">
+  <div class="resumo-grid">
+    <div class="item">
+      <span class="label">Gaiola Branca</span>
+      <span class="valor" id="cont-branca">0</span>
+    </div>
+    <div class="item">
+      <span class="label">FM</span>
+      <span class="valor" id="cont-fm">0</span>
+    </div>
+    <div class="item">
+      <span class="label">Gaiola Amarela</span>
+      <span class="valor" id="cont-amarela">0</span>
+    </div>
+    <div class="item">
+      <span class="label">Gaiola Azul</span>
+      <span class="valor" id="cont-azul">0</span>
+    </div>
+    <div class="item">
+      <span class="label">PA</span>
+      <span class="valor" id="cont-pa">0</span>
+    </div>
+    <div class="item">
+      <span class="label">CDGU</span>
+      <span class="valor" id="cont-cdgu">0</span>
+    </div>
+  </div>
+  
+  <div class="total-linha">
+    <span class="total-label">TOTAL DE UNIDADES</span>
+    <span class="total-valor" id="cont-total">0</span>
+  </div>
+</div>
+
           <table>
             <thead>
               <tr>
@@ -341,7 +464,6 @@
         </div>
       </div>
 
-      <!-- ABA 2: ETIQUETAS -->
       <div id="aba-etiquetas" class="tab-content">
         <div class="cards">
           <div class="card">
@@ -391,5 +513,3 @@
     </div>
   </body>
 </html>
-
-
