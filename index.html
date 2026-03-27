@@ -1,844 +1,1116 @@
 <!doctype html>
 <html lang="pt-br">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SCS - Sistema Contagem de Sacas</title>
     <link rel="shortcut icon" href="./img/CDC-ESTOQUE.png" />
+    
+    <!-- Bibliotecas Externas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Importação do arquivo de Senhas -->
+    <script src="./acesso.js"></script>
 
-    <!-- Estilos melhorados (CSS) - mantidos intactos -->
     <style>
-      :root {
-        --primary-color: #1d4ed8;
-        --primary-hover: #2563eb;
-        --danger-color: #ef4444;
-        --danger-hover: #dc2626;
-        --bg-color: #f3f4f6;
-        --card-bg: #ffffff;
-        --text-dark: #1f2937;
-        --text-muted: #6b7280;
-        --border-color: #e5e7eb;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", system-ui, sans-serif;
-      }
-      body {
-        background: var(--bg-color);
-        color: var(--text-dark);
-        padding: 20px;
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: auto;
-      }
-
-      header {
-        background: var(--card-bg);
-        color: var(--primary-color);
-        padding: 20px 30px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        text-align: center;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border-top: 5px solid var(--primary-color);
-      }
-      header h1 {
-        font-size: 26px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-      }
-
-      .tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        border-bottom: 2px solid var(--border-color);
-        padding-bottom: 5px;
-      }
-      .tab-btn {
-        background: transparent;
-        color: var(--text-muted);
-        border: none;
-        padding: 12px 24px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        border-radius: 8px 8px 0 0;
-        transition: all 0.3s ease;
-      }
-      .tab-btn:hover {
-        color: var(--primary-color);
-        background: #e0e7ff;
-      }
-      .tab-btn.active {
-        color: var(--primary-color);
-        border-bottom: 3px solid var(--primary-color);
-        background: #e0e7ff;
-      }
-      .tab-content {
-        display: none;
-        animation: fadeIn 0.4s ease;
-      }
-      .tab-content.active {
-        display: block;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(5px);
+        /* ================= Variáveis CSS ================= */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --danger: #ef4444;
+            --danger-dark: #dc2626;
+            --success: #10b981;
+            --whatsapp: #25D366;
+            --whatsapp-dark: #128C7E;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        to {
-          opacity: 1;
-          transform: translateY(0);
+
+        /* ================= Reset e Base ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
         }
-      }
 
-      .scanner-box {
-        background: var(--card-bg);
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      .scanner-box h2 {
-        color: var(--text-dark);
-        margin-bottom: 15px;
-      }
-      #scanner {
-        width: 100%;
-        max-width: 600px;
-        padding: 18px;
-        font-size: 20px;
-        border-radius: 8px;
-        border: 2px solid var(--border-color);
-        outline: none;
-        transition:
-          border-color 0.3s,
-          box-shadow 0.3s;
-        text-align: center;
-      }
-      #scanner:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.2);
-      }
-
-      .relatorio {
-        background: var(--card-bg);
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      }
-      .relatorio h2 {
-        margin-bottom: 20px;
-        color: var(--text-dark);
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 10px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-      }
-      th {
-        background: #f8fafc;
-        color: var(--text-muted);
-        padding: 15px;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 14px;
-        border-bottom: 2px solid var(--border-color);
-        text-align: center;
-      }
-      td {
-        padding: 15px;
-        border-bottom: 1px solid var(--border-color);
-        text-align: center;
-        color: var(--text-dark);
-      }
-      tr:hover td {
-        background-color: #f1f5f9;
-      }
-
-      .resumo-contagem {
-        background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
-        border: 1px solid #93c5fd;
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0 30px 0;
-        box-shadow: 0 2px 8px rgba(147, 197, 253, 0.3);
-      }
-
-      .resumo-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px 24px;
-        margin-bottom: 20px;
-      }
-
-      .item {
-        background: white;
-        border-radius: 8px;
-        padding: 12px 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        text-align: center;
-        border: 1px solid #bfdbfe;
-      }
-
-      .label {
-        display: block;
-        font-size: 0.95em;
-        color: #4b5563;
-        margin-bottom: 6px;
-        font-weight: 500;
-      }
-
-      .valor {
-        display: block;
-        font-size: 1.8em;
-        font-weight: 700;
-        color: #1d4ed8;
-      }
-
-      .total-linha {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #1d4ed8;
-        color: white;
-        padding: 16px 20px;
-        border-radius: 10px;
-        font-size: 1.3em;
-        font-weight: 600;
-        margin-top: 8px;
-      }
-
-      .total-label {
-        opacity: 0.95;
-      }
-
-      .total-valor {
-        font-size: 1.5em;
-      }
-
-      /* Ajuste para impressão */
-      @media print {
-        .resumo-contagem {
-          border: 1px solid #000;
-          background: #fff;
-          box-shadow: none;
-        }
-        .total-linha {
-          background: #000;
-          color: white;
-        }
-        .item {
-          border: 1px solid #666;
-        }
-      }
-
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-      }
-      .card {
-        background: var(--card-bg);
-        padding: 30px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-        border: 1px solid var(--border-color);
-      }
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        border-color: #bfdbfe;
-      }
-      .card h3 {
-        font-size: 20px;
-        color: var(--text-dark);
-        margin-bottom: 5px;
-      }
-      .card p {
-        font-size: 16px;
-        color: var(--text-muted);
-        margin-bottom: 20px;
-        font-weight: 500;
-      }
-
-      .card div {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px;
-      }
-
-      button {
-        background: var(--primary-color);
-        color: #fff;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 15px;
-        transition: 0.2s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-      }
-      button:hover {
-        background: var(--primary-hover);
-      }
-      .btn-danger {
-        background: var(--danger-color);
-      }
-      .btn-danger:hover {
-        background: var(--danger-hover);
-      }
-
-      .acoes-relatorio {
-        margin-top: 30px;
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-      }
-      .linha-assinatura {
-        margin-top: 50px;
-        font-size: 16px;
-        color: var(--text-dark);
-        text-align: center;
-      }
-
-      @media print {
-        header,
-        .tabs,
-        .scanner-box,
-        .acoes-relatorio {
-          display: none !important;
-        }
         body {
-          background: #fff;
-          padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 2rem 1rem;
+            line-height: 1.5;
         }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ================= Cabeçalho ================= */
+        header {
+            background: var(--surface);
+            padding: 1.5rem 2rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border-top: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header i {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        /* ================= Abas (Tabs) ================= */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ================= Scanner ================= */
+        .scanner-box {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .scanner-box h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            position: relative;
+            max-width: 500px;
+            margin: 1.5rem auto 0;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        #scanner {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3.5rem;
+            font-size: 1.1rem;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border);
+            outline: none;
+            transition: var(--transition);
+            color: var(--text-main);
+            background-color: var(--bg-body);
+        }
+
+        #scanner:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+            background-color: var(--surface);
+        }
+
+        /* ================= Relatório & Tabela ================= */
         .relatorio {
-          box-shadow: none;
-          border: none;
-          padding: 0;
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
         }
-        .resumo-contagem {
-          border: 1px solid #000;
-          background: #fff;
+
+        .relatorio-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
         }
+
         table {
-          border: 1px solid #000;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
         }
-        th,
+
+        th {
+            background: var(--bg-body);
+            color: var(--text-muted);
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border);
+            text-align: left;
+        }
+
         td {
-          border: 1px solid #000;
-          padding: 8px;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 0.95rem;
         }
-      }
+
+        tr:hover td {
+            background-color: var(--bg-body);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Animação para destacar item duplicado */
+        @keyframes piscarErro {
+            0% { background-color: transparent; }
+            50% { background-color: #fecaca; transform: scale(1.01); }
+            100% { background-color: transparent; }
+        }
+
+        .highlight-duplicate {
+            animation: piscarErro 0.8s ease-in-out 3;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* ================= Resumo Contagem ================= */
+        .resumo-contagem {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .item {
+            background: var(--bg-body);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .valor {
+            display: block;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .total-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-dark);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-md);
+        }
+
+        .total-label {
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .total-valor {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        /* ================= Cards Etiquetas ================= */
+        .aba-header {
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 1rem 0;
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 2rem 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: #bfdbfe;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            background: var(--bg-body);
+            padding: 4px 12px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* ================= Botões ================= */
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button:hover { background: var(--primary-dark); }
+        button:active { transform: scale(0.98); }
+
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: var(--danger-dark); }
+        
+        .btn-whatsapp { background: var(--whatsapp); color: #fff;}
+        .btn-whatsapp:hover { background: var(--whatsapp-dark); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { background: var(--bg-body); }
+
+        .acoes-relatorio {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        /* ================= Modal Nativo (Dialog) ================= */
+        dialog {
+            margin: auto;
+            padding: 2rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            box-shadow: var(--shadow-lg);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        dialog::backdrop {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+
+        dialog p {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        dialog input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            outline: none;
+            text-align: center;
+        }
+        
+        dialog input:focus { border-color: var(--primary); }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* ================= Toast Notification ================= */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--surface);
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 2.7s;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .toast i {
+            color: var(--success);
+            font-size: 1.25rem;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateY(10px); }
+        }
+
+        /* ================= Impressão ================= */
+        .linha-assinatura { display: none; }
+
+        @media print {
+            body { padding: 0; background: white; }
+            header, .tabs, .scanner-box, .acoes-relatorio, button { display: none !important; }
+            .relatorio { border: none; box-shadow: none; padding: 0; }
+            .resumo-contagem { break-inside: avoid; border-color: #000; }
+            .total-linha { background: #000 !important; color: white !important; }
+            table, th, td { border: 1px solid #000; }
+            th { background: #f0f0f0; }
+            .linha-assinatura {
+                display: block;
+                margin-top: 50px;
+                text-align: center;
+                color: #000;
+            }
+        }
     </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <i class="ph ph-package"></i>
+            <h1>Gestão e Contagem de Sacas</h1>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="abrirAba('aba-bipagem')">
+                <i class="ph ph-barcode"></i> Bipagem e Relatório
+            </button>
+            <button class="tab-btn" onclick="abrirAba('aba-etiquetas')">
+                <i class="ph ph-qr-code"></i> Etiquetas QR
+            </button>
+        </div>
+
+        <!-- ABA BIPAGEM -->
+        <div id="aba-bipagem" class="tab-content active">
+            <div class="scanner-box">
+                <h2><i class="ph ph-scan"></i> Bipagem pelo Coletor</h2>
+                <p style="color: var(--text-muted);">Posicione o cursor e utilize o leitor de código de barras.</p>
+                
+                <div class="input-group">
+                    <i class="ph ph-barcode"></i>
+                    <input id="scanner" placeholder="Aguardando leitura do código..." autofocus autocomplete="off" />
+                </div>
+            </div>
+
+            <div class="relatorio">
+                <div class="relatorio-header">
+                    <h2><i class="ph ph-chart-bar"></i> Relatório de Contagem</h2>
+                </div>
+
+                <div id="resumo-contagem" class="resumo-contagem">
+                    <div class="resumo-grid">
+                        <div class="item">
+                            <span class="label">Saca Branca</span>
+                            <span class="valor" id="cont-branca">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">Saca Amarela</span>
+                            <span class="valor" id="cont-amarela">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">Saca Azul</span>
+                            <span class="valor" id="cont-azul">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">FM</span>
+                            <span class="valor" id="cont-fm">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">PA</span>
+                            <span class="valor" id="cont-pa">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">CDGU</span>
+                            <span class="valor" id="cont-cdgu">0</span>
+                        </div>
+                    </div>
+
+                    <div class="total-linha">
+                        <span class="total-label"><i class="ph ph-sigma"></i> TOTAL DE UNIDADES</span>
+                        <span class="total-valor" id="cont-total">0</span>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código da Etiqueta</th>
+                            <th>Tipo de Item</th>
+                            <th>Qtd. Unidades</th>
+                            <th>Data</th>
+                            <th>Hora</th>
+                            <th>Status de Envio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">
+                                <i class="ph ph-spinner-gap ph-spin" style="font-size: 1.5rem;"></i> Carregando dados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="acoes-relatorio">
+                    <button class="btn-outline" onclick="limparRelatorio()">
+                        <i class="ph ph-trash"></i> Limpar Relatório
+                    </button>
+                    <button class="btn-whatsapp" onclick="enviarWhatsapp()">
+                        <i class="ph ph-whatsapp-logo"></i> Enviar WhatsApp
+                    </button>
+                    <button onclick="gerarRelatorio()">
+                        <i class="ph ph-printer"></i> Imprimir Tabela
+                    </button>
+                </div>
+
+                <div id="rodape"></div>
+            </div>
+        </div>
+
+        <!-- ABA ETIQUETAS -->
+        <div id="aba-etiquetas" class="tab-content">
+            <div class="aba-header">
+                <h2><i class="ph ph-tag"></i> Geração de Etiquetas para Impressão Térmica</h2>
+                <p>As etiquetas abaixo estão configuradas para impressão no formato 150mm (Largura) x 100mm (Altura).</p>
+            </div>
+            <div class="cards">
+                <!-- Cards Gerados via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nativo HTML5 -->
+    <dialog id="custom-dialog">
+        <i class="ph ph-warning-circle modal-icon" id="dialog-icon"></i>
+        <p id="dialog-text">Mensagem do sistema</p>
+        <input id="dialog-input" type="number" style="display: none;" min="1" placeholder="" />
+        
+        <div class="modal-actions">
+            <button class="btn-outline" id="dialog-cancel" style="display: none;">Cancelar</button>
+            <button id="dialog-ok">Confirmar</button>
+        </div>
+    </dialog>
+
+    <!-- Container de Notificações -->
+    <div id="toast-container"></div>
 
     <script>
-      function abrirModal({ texto, input = false }) {
-        return new Promise((resolve) => {
-          const modal = document.getElementById("modal");
-          const text = document.getElementById("modal-text");
-          const inputEl = document.getElementById("modal-input");
+        // ================= INTERFACE & UTILIDADES ================= //
+        
+        // Alternar Abas
+        window.abrirAba = function(nomeAba) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-          text.textContent = texto;
+            document.getElementById(nomeAba).classList.add('active');
+            event.currentTarget.classList.add('active');
 
-          if (input) {
-            inputEl.style.display = "block";
-            inputEl.value = "";
-          } else {
-            inputEl.style.display = "none";
-          }
-
-          modal.style.display = "flex";
-
-          document.getElementById("modal-ok").onclick = () => {
-            modal.style.display = "none";
-            resolve(input ? inputEl.value : true);
-          };
-
-          document.getElementById("modal-cancel").onclick = () => {
-            modal.style.display = "none";
-            resolve(false);
-          };
-        });
-      }
-    </script>
-
-    <script type="module">
-            import { database, ref, push, onValue, set } from './bd.js';
-
-            window.abrirAba = function(nomeAba) {
-              document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-              document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-              document.getElementById(nomeAba).classList.add('active');
-              event.currentTarget.classList.add('active');
-
-              if(nomeAba === 'aba-bipagem') {
+            if(nomeAba === 'aba-bipagem') {
                 document.getElementById('scanner').focus();
-              }
             }
+        }
 
-            const tabela = document.getElementById("tabela");
-            const inputScanner = document.getElementById("scanner");
-            const contagensRef = ref(database, 'contagens');
-
-            // --------------------------------------------------
-            //   CONTADORES PARA O RESUMO
-            // --------------------------------------------------
-            function atualizarResumo(dados) {
-              const contagem = {
-                branca:  0,
-                fm:      0,
-                amarela: 0,
-                azul:    0,
-                pa:      0,
-                cdgu:    0
-              };
-
-              if (dados) {
-                Object.values(dados).forEach(item => {
-                  const tipo = (item.tipo || "").toUpperCase().trim();
-                  const qtd = Number(item.unidades) || 0;
-
-                  if (tipo.includes("BRANCA"))   contagem.branca  += qtd;
-                  else if (tipo === "FM")        contagem.fm      += qtd;
-                  else if (tipo.includes("AMARELA")) contagem.amarela += qtd;
-                  else if (tipo.includes("AZUL"))    contagem.azul    += qtd;
-                  else if (tipo === "PA")            contagem.pa      += qtd;
-                  else if (tipo === "CDGU")          contagem.cdgu    += qtd;
-                });
-              }
-
-              const total = Object.values(contagem).reduce((a, b) => a + b, 0);
-
-              // Atualiza os valores diretamente para evitar flicker e re-render desnecessário
-              document.getElementById("cont-branca").textContent  = contagem.branca || 0;
-              document.getElementById("cont-fm").textContent      = contagem.fm || 0;
-              document.getElementById("cont-amarela").textContent = contagem.amarela || 0;
-              document.getElementById("cont-azul").textContent    = contagem.azul || 0;
-              document.getElementById("cont-pa").textContent      = contagem.pa || 0;
-              document.getElementById("cont-cdgu").textContent    = contagem.cdgu || 0;
-              document.getElementById("cont-total").textContent   = total.toLocaleString("pt-BR");
+        // Sistema de Toast Notification
+        function mostrarToast(mensagem, tipo = 'success') {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            
+            if(tipo === 'error') {
+                toast.style.borderLeftColor = "var(--danger)";
+                toast.innerHTML = `<i class="ph ph-x-circle" style="color: var(--danger)"></i> <span>${mensagem}</span>`;
+            } else {
+                toast.innerHTML = `<i class="ph ph-check-circle"></i> <span>${mensagem}</span>`;
             }
+            
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
 
+        // Modal Nativo Promisificado
+        function abrirModal({ texto, input = false, inputType = 'number', tipo = 'warning' }) {
+            return new Promise((resolve) => {
+                const dialog = document.getElementById("custom-dialog");
+                const textEl = document.getElementById("dialog-text");
+                const inputEl = document.getElementById("dialog-input");
+                const btnCancel = document.getElementById("dialog-cancel");
+                const iconEl = document.getElementById("dialog-icon");
 
-            function atualizarTabela(snapshot) {
-              tabela.innerHTML = "";
+                textEl.textContent = texto;
+                
+                // Configura ícone
+                if(tipo === 'warning') {
+                    iconEl.className = "ph ph-warning-circle modal-icon";
+                    iconEl.style.color = "var(--danger)";
+                } else if(tipo === 'lock') {
+                    iconEl.className = "ph ph-lock-key modal-icon";
+                    iconEl.style.color = "var(--text-main)";
+                } else {
+                    iconEl.className = "ph ph-question modal-icon";
+                    iconEl.style.color = "var(--primary)";
+                }
 
-              if (!snapshot.exists()) {
-                tabela.innerHTML = '<tr><td colspan="5" style="padding: 30px; color: #6b7280;">Nenhuma contagem registrada no momento.</td></tr>';
-                atualizarResumo(null);
-                return;
-              }
+                if (input) {
+                    inputEl.type = inputType;
+                    inputEl.style.display = "block";
+                    btnCancel.style.display = "block";
+                    inputEl.value = "";
+                    
+                    if(inputType === 'password') {
+                        inputEl.placeholder = "Digite a senha...";
+                    } else {
+                        inputEl.placeholder = "Ex: 5";
+                    }
+                    
+                    setTimeout(() => inputEl.focus(), 100);
+                } else {
+                    inputEl.style.display = "none";
+                    btnCancel.style.display = "block"; // Sempre mostra cancelar
+                }
 
-              const dados = snapshot.val();
-              atualizarResumo(dados);
+                dialog.showModal();
 
-              Object.entries(dados).forEach(([id, item]) => {
-                const linha = document.createElement("tr");
-                linha.innerHTML = `
-                  <td><strong>${item.tipo || "?"}</strong></td>
-                  <td>${item.unidades || "?"}</td>
-                  <td>${item.data || "-"}</td>
-                  <td>${item.hora || "-"}</td>
-                  <td><span style="color: #10b981; font-weight: bold;">✔ Enviado</span></td>
+                const confirmar = () => {
+                    dialog.close();
+                    limparEventos();
+                    resolve(input ? inputEl.value : true);
+                };
+
+                const cancelar = () => {
+                    dialog.close();
+                    limparEventos();
+                    resolve(false);
+                };
+
+                const onKeyPress = (e) => {
+                    if (e.key === 'Enter') confirmar();
+                };
+
+                document.getElementById("dialog-ok").onclick = confirmar;
+                btnCancel.onclick = cancelar;
+                inputEl.addEventListener('keypress', onKeyPress);
+
+                function limparEventos() {
+                    document.getElementById("dialog-ok").onclick = null;
+                    btnCancel.onclick = null;
+                    inputEl.removeEventListener('keypress', onKeyPress);
+                }
+            });
+        }
+
+        // Geração da UI das Etiquetas
+        const etiquetasData = [
+            { id: "branca", titulo: "Gaiola Branca", qtd: 280, prefixo: "Gaiola de Saca Branca" },
+            { id: "amarela", titulo: "Gaiola Amarela", qtd: 280, prefixo: "Gaiola de Saca Amarela" },
+            { id: "azul", titulo: "Gaiola Azul", qtd: 280, prefixo: "Gaiola de Saca Azul" },
+            { id: "fm", titulo: "Saca FM", qtd: 600, prefixo: "FM" },
+            { id: "pa", titulo: "Saca PA", qtd: 450, prefixo: "PA" },
+            { id: "cdgu", titulo: "Saca CDGU", qtd: 450, prefixo: "CDGU" }
+        ];
+
+        function renderizarEtiquetas() {
+            const container = document.querySelector(".cards");
+            etiquetasData.forEach(et => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+                    <div>
+                        <h3>${et.titulo}</h3>
+                        <p>${et.qtd} unidades</p>
+                    </div>
+                    <div class="qr-container" id="qr_${et.id}"></div>
+                    <button style="width: 100%" onclick="imprimirEtiqueta('${et.prefixo}', ${et.qtd})">
+                        <i class="ph ph-printer"></i> Imprimir
+                    </button>
                 `;
-                tabela.appendChild(linha);
-              });
-            }
-
-            onValue(contagensRef, (snapshot) => {
-              atualizarTabela(snapshot);
+                container.appendChild(card);
             });
 
-            inputScanner.addEventListener("keypress", async function (e) {
-  if (e.key !== "Enter") return;
-  
-  const codigo = this.value.trim();
-  if (!codigo) return;
-
-  // ────────────────────────────────────────────────
-  // 1) Verifica se esse código já existe
-  // ────────────────────────────────────────────────
-  const jaExiste = await new Promise((resolve) => {
-    onValue(ref(database, 'contagens'), (snap) => {
-      if (!snap.exists()) {
-        resolve(false);
-        return;
-      }
-      const dados = snap.val();
-      const existe = Object.values(dados).some(item => item.codigoOriginal === codigo);
-      resolve(existe);
-    }, { onlyOnce: true });  // só consulta uma vez
-  });
-
-  if (jaExiste) {
-    await abrirModal({ 
-      texto: "Esta etiqueta já foi bipada anteriormente!\nNão é permitido duplicar." 
-    });
-    this.value = "";
-    this.focus();
-    return;  // ← interrompe o fluxo
-  }
-
-  // ────────────────────────────────────────────────
-  // Prossegue com o salvamento (código original continua aqui)
-  // ────────────────────────────────────────────────
-  const agora = new Date();
-  const data = agora.toLocaleDateString("pt-BR");
-  const hora = agora.toLocaleTimeString("pt-BR");
-  
-  const partes = codigo.split("-");
-  const tipo = partes[0] || "DESCONHECIDO";
-  const unidades = partes[1] || "?";
-
-  try {
-    await push(contagensRef, {
-      tipo,
-      unidades,
-      data,
-      hora,
-      timestamp: agora.getTime(),
-      codigoOriginal: codigo
-    });
-    
-    // feedback visual/sonoro de sucesso (opcional)
-    this.style.backgroundColor = "#d1fae5";
-    setTimeout(() => { this.style.backgroundColor = ""; }, 400);
-    
-    this.value = "";
-    this.focus();
-    
-  } catch (error) {
-    console.error("Erro ao salvar:", error);
-    await abrirModal({ texto: "Erro ao registrar. Veja o console." });
-  }
-});
-
-            window.limparRelatorio = async function () {
-        const ok = await abrirModal({
-          texto: "Deseja realmente LIMPAR TODO o relatório?"
-        });
-
-        if (!ok) return;
-
-        try {
-          await set(contagensRef, null);
-
-          await abrirModal({
-            texto: "Relatório limpo!"
-          });
-
-        } catch (error) {
-          console.error(error);
-
-          await abrirModal({
-            texto: "Erro ao limpar relatório."
-          });
+            // Gera os QRs logo após renderizar
+            setTimeout(() => {
+                etiquetasData.forEach(et => {
+                    new QRCode(document.getElementById(`qr_${et.id}`), {
+                        text: `${et.prefixo}-${et.qtd}`,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#0f172a"
+                    });
+                });
+            }, 100);
         }
-      };
+        renderizarEtiquetas();
 
+        window.gerarRelatorio = function() {
+            let agora = new Date();
+            document.getElementById("rodape").innerHTML = `
+                <div class="linha-assinatura">
+                    _____________________________________________________<br>
+                    Assinatura do Responsável<br><br>
+                    <small>Documento gerado em: ${agora.toLocaleDateString()} às ${agora.toLocaleTimeString()}</small>
+                </div>`;
+            window.print();
+        };
 
-            function gerarQR() {
-              new QRCode(document.getElementById("qr_branca"), "BRANCA-280");
-              new QRCode(document.getElementById("qr_amarela"), "AMARELA-280");
-              new QRCode(document.getElementById("qr_azul"), "AZUL-280");
-              new QRCode(document.getElementById("qr_fm"), "FM-600");
-              new QRCode(document.getElementById("qr_pa"), "PA-450");
-              new QRCode(document.getElementById("qr_cdgu"), "CDGU-450");
+        // Whatsapp logic
+        window.enviarWhatsapp = async function() {
+            const senha = await abrirModal({
+                texto: "Acesso restrito. Digite a senha para enviar o relatório via WhatsApp:",
+                input: true,
+                inputType: 'password',
+                tipo: 'lock'
+            });
+
+            if (senha === false) return; // cancelou
+            
+            // Verifica se a senha está na lista gerada pelo arquivo acesso.js
+            if (typeof SENHAS_SISTEMA === 'undefined' || !SENHAS_SISTEMA.includes(senha)) {
+                mostrarToast("Senha incorreta!", "error");
+                return;
             }
 
-            setTimeout(gerarQR, 100);
+            // Capturar dados do painel de resumo
+            const d = document;
+            const branca = d.getElementById("cont-branca").innerText;
+            const amarela = d.getElementById("cont-amarela").innerText;
+            const azul = d.getElementById("cont-azul").innerText;
+            const fm = d.getElementById("cont-fm").innerText;
+            const pa = d.getElementById("cont-pa").innerText;
+            const cdgu = d.getElementById("cont-cdgu").innerText;
+            const total = d.getElementById("cont-total").innerText;
 
-           window.imprimirEtiqueta = async function(tipo, unidades) {   // ← coloque async aqui
+            let mensagem = `*📊 RELATÓRIO DE CONTAGEM DE SACAS 📊*\n\n`;
+            mensagem += `⚪ Saca Branca: *${branca}*\n`;
+            mensagem += `🟡 Saca Amarela: *${amarela}*\n`;
+            mensagem += `🔵 Saca Azul: *${azul}*\n`;
+            mensagem += `📦 FM: *${fm}*\n`;
+            mensagem += `📦 PA: *${pa}*\n`;
+            mensagem += `📦 CDGU: *${cdgu}*\n\n`;
+            mensagem += `*TOTAL GERAL: ${total} UNIDADES*\n\n`;
+            mensagem += `_Gerado em: ${new Date().toLocaleString("pt-BR")}_`;
 
-    // Substitui o prompt por modal customizado
-    const resposta = await abrirModal({
-        texto: "Quantas etiquetas deseja imprimir?",
-        input: true
-    });
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        };
 
-    if (!resposta) return; // cancelou ou fechou
+        // Impressão Etiqueta Térmica 150x100mm (Largura: 150, Altura: 100)
+        window.imprimirEtiqueta = async function(tipo, unidades) {
+            const resposta = await abrirModal({
+                texto: `Quantas etiquetas de ${tipo} deseja imprimir?`,
+                input: true,
+                inputType: 'number',
+                tipo: 'question'
+            });
 
-    const quantidade = parseInt(resposta, 10);
+            if (!resposta) return;
 
-    if (!quantidade || quantidade <= 0 || isNaN(quantidade)) {
-        await abrirModal({ texto: "Quantidade inválida." });
-        return;
-    }
+            const quantidade = parseInt(resposta, 10);
+            if (!quantidade || quantidade <= 0 || isNaN(quantidade)) {
+                mostrarToast("Quantidade inválida.", "error");
+                return;
+            }
 
-    // o resto do código continua igual...
-    let janela = window.open("", "", "width=1000,height=1000");
-    janela.document.write(`
-        <style>
-            body { font-family: Arial; text-align: center; padding-top: 40px; }
-            .etiqueta { page-break-after: always; }
-            h1 { font-size: 40px; margin-bottom: 10px; }
-            p { font-size: 24px; margin-bottom: 30px; }
-            .qr { display: flex; justify-content: center; }
-        </style>
-    `);
+            let janela = window.open("", "", "width=800,height=600");
+            janela.document.write(`
+                <style>
+                    /* Configuração exata para impressora térmica: Largura 150mm x Altura 100mm */
+                    @page { 
+                        size: 150mm 100mm; 
+                        margin: 0; 
+                    }
+                    body { 
+                        font-family: 'Segoe UI', sans-serif; 
+                        text-align: center; 
+                        margin: 0; 
+                        padding: 0;
+                        background: white;
+                    }
+                    .etiqueta { 
+                        width: 150mm;
+                        height: 100mm;
+                        page-break-after: always; /* Garante que pule a página termica */
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center; 
+                        justify-content: center;
+                        box-sizing: border-box;
+                        padding: 5mm; /* Margem interna para evitar corte de impressão */
+                        overflow: hidden; /* Previne criação acidental de páginas em branco */
+                    }
+                    h1 { font-size: 55px; margin: 0 0 5px 0; color: #000; line-height: 1.1;}
+                    p { font-size: 35px; margin: 0 0 15px 0; color: #333; font-weight: bold;}
+                    .qr-wrapper {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                </style>
+            `);
 
-    let codigos = [];
-    for (let i = 0; i < quantidade; i++) {
-        const codigo = `${tipo}-${unidades}-${Date.now()}-${i}`;
-        codigos.push(codigo);
-        janela.document.write(`
-            <div class="etiqueta">
-                <h1>${tipo}</h1>
-                <p>${unidades} unidades</p>
-                <div id="qr_${i}" class="qr"></div>
-            </div>
-        `);
-    }
+            let codigos = [];
+            for (let i = 0; i < quantidade; i++) {
+                const codigo = `${tipo}-${unidades}-${Date.now()}-${i}`;
+                codigos.push(codigo);
+                janela.document.write(`
+                    <div class="etiqueta">
+                        <h1>${tipo}</h1>
+                        <p>${unidades} UNIDADES</p>
+                        <div class="qr-wrapper" id="qr_${i}"></div>
+                    </div>
+                `);
+            }
+            janela.document.close();
 
-    janela.document.close();
-
-    setTimeout(() => {
-        for (let i = 0; i < quantidade; i++) {
-            new QRCode(
-                janela.document.getElementById(`qr_${i}`),
-                {
-                    text: codigos[i],
-                    width: 260,
-                    height: 260,
+            // Gerar QRs no tamanho adequado para a etiqueta térmica
+            setTimeout(() => {
+                for (let i = 0; i < quantidade; i++) {
+                    new QRCode(janela.document.getElementById(`qr_${i}`), { 
+                        text: codigos[i], 
+                        width: 200, 
+                        height: 200,
+                        colorDark: "#000000"
+                    });
                 }
-            );
-        }
-    }, 300);
+            }, 300);
 
-    setTimeout(() => janela.print(), 800);
-};
-
-
-            window.gerarRelatorio = function() {
-              let agora = new Date();
-              document.getElementById("rodape").innerHTML = `
-      <div class="linha-assinatura">
-        Assinatura do responsável: __________________________________
-        <br><br>
-        Data e hora de emissão: ${agora.toLocaleDateString()} às ${agora.toLocaleTimeString()}
-      </div>`;
-              window.print();
-            };
+            setTimeout(() => { janela.print(); janela.close(); }, 800);
+        };
     </script>
-  </head>
 
-  <body>
-    <div class="container">
-      <header>
-        <h1>📦 Gestão - Contagem de Sacas</h1>
-      </header>
+    <!-- ================= FIREBASE & LÓGICA DE DADOS ================= -->
+    <script type="module">
+        import { database, ref, push, onValue, set } from './bd.js';
 
-      <div class="tabs">
-        <button class="tab-btn active" onclick="abrirAba('aba-bipagem')">
-          📡 Bipagem e Relatório
-        </button>
-        <button class="tab-btn" onclick="abrirAba('aba-etiquetas')">
-          🏷️ Etiquetas
-        </button>
-      </div>
+        const tabela = document.getElementById("tabela");
+        const inputScanner = document.getElementById("scanner");
+        const contagensRef = ref(database, 'contagens');
 
-      <div id="aba-bipagem" class="tab-content active">
-        <div class="scanner-box">
-          <h2>Bipagem pelo Coletor</h2>
-          <p style="color: #6b7280; margin-bottom: 15px">
-            Posicione o cursor no campo abaixo e utilize o leitor de Código de
-            Barras/Qr Code.
-          </p>
-          <input
-            id="scanner"
-            placeholder="Bipe o código aqui..."
-            autofocus
-            autocomplete="off"
-          />
-        </div>
+        function atualizarResumo(dados) {
+            const contagem = { branca: 0, fm: 0, amarela: 0, azul: 0, pa: 0, cdgu: 0 };
 
-        <div class="relatorio">
-          <h2>📊 Relatório de Contagem</h2>
+            if (dados) {
+                Object.values(dados).forEach(item => {
+                    const tipo = (item.tipo || "").toUpperCase().trim();
+                    const qtd = Number(item.unidades) || 0;
 
-          <!-- NOVO BLOCO: RESUMO DE CONTAGEM -->
-          <div id="resumo-contagem" class="resumo-contagem">
-            <div class="resumo-grid">
-              <div class="item">
-                <span class="label">Gaiola Branca</span>
-                <span class="valor" id="cont-branca">0</span>
-              </div>
-              <div class="item">
-                <span class="label">FM</span>
-                <span class="valor" id="cont-fm">0</span>
-              </div>
-              <div class="item">
-                <span class="label">Gaiola Amarela</span>
-                <span class="valor" id="cont-amarela">0</span>
-              </div>
-              <div class="item">
-                <span class="label">Gaiola Azul</span>
-                <span class="valor" id="cont-azul">0</span>
-              </div>
-              <div class="item">
-                <span class="label">PA</span>
-                <span class="valor" id="cont-pa">0</span>
-              </div>
-              <div class="item">
-                <span class="label">CDGU</span>
-                <span class="valor" id="cont-cdgu">0</span>
-              </div>
-            </div>
+                    if (tipo.includes("BRANCA")) contagem.branca += qtd;
+                    else if (tipo === "FM") contagem.fm += qtd;
+                    else if (tipo.includes("AMARELA")) contagem.amarela += qtd;
+                    else if (tipo.includes("AZUL")) contagem.azul += qtd;
+                    else if (tipo === "PA") contagem.pa += qtd;
+                    else if (tipo === "CDGU") contagem.cdgu += qtd;
+                });
+            }
 
-            <div class="total-linha">
-              <span class="total-label">TOTAL DE UNIDADES</span>
-              <span class="total-valor" id="cont-total">0</span>
-            </div>
-          </div>
+            const total = Object.values(contagem).reduce((a, b) => a + b, 0);
 
-          <table>
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Unidades</th>
-                <th>Data</th>
-                <th>Hora</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="tabela">
-              <tr>
-                <td colspan="5">Carregando dados...</td>
-              </tr>
-            </tbody>
-          </table>
+            document.getElementById("cont-branca").textContent = contagem.branca;
+            document.getElementById("cont-fm").textContent = contagem.fm;
+            document.getElementById("cont-amarela").textContent = contagem.amarela;
+            document.getElementById("cont-azul").textContent = contagem.azul;
+            document.getElementById("cont-pa").textContent = contagem.pa;
+            document.getElementById("cont-cdgu").textContent = contagem.cdgu;
+            document.getElementById("cont-total").textContent = total.toLocaleString("pt-BR");
+        }
 
-          <div class="acoes-relatorio">
-            <button onclick="gerarRelatorio()">🖨️ Imprimir Relatório</button>
-            <button class="btn-danger" onclick="limparRelatorio()">
-              🗑️ Limpar Relatório
-            </button>
-          </div>
+        function atualizarTabela(snapshot) {
+            tabela.innerHTML = "";
 
-          <div id="rodape"></div>
-        </div>
-      </div>
+            if (!snapshot.exists()) {
+                tabela.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">Nenhuma contagem registrada no momento.</td></tr>`;
+                atualizarResumo(null);
+                return;
+            }
 
-      <div id="aba-etiquetas" class="tab-content">
-        <div class="cards">
-          <div class="card">
-            <h3>Gaiola de Saca Branca</h3>
-            <p>280 unidades</p>
-            <div id="qr_branca"></div>
-            <button onclick="imprimirEtiqueta('Gaiola de Saca Branca', 280)">
-              🖨️ Imprimir Etiqueta
-            </button>
-          </div>
+            const dados = snapshot.val();
+            atualizarResumo(dados);
 
-          <div class="card">
-            <h3>Gaiola de Saca Amarela</h3>
-            <p>280 unidades</p>
-            <div id="qr_amarela"></div>
-            <button onclick="imprimirEtiqueta('Gaiola de Saca Amarela', 280)">
-              🖨️ Imprimir Etiqueta
-            </button>
-          </div>
+            // Adiciona atributo data-codigo para poder localizar a linha na duplicidade
+            Object.entries(dados).forEach(([id, item]) => {
+                const linha = document.createElement("tr");
+                linha.setAttribute("data-codigo", item.codigoOriginal);
+                linha.innerHTML = `
+                    <td style="font-family: monospace; color: var(--text-muted); font-size: 0.85rem">${item.codigoOriginal || "-"}</td>
+                    <td><strong>${item.tipo || "-"}</strong></td>
+                    <td>${item.unidades || "-"}</td>
+                    <td>${item.data || "-"}</td>
+                    <td>${item.hora || "-"}</td>
+                    <td><span class="status-badge"><i class="ph ph-check-circle"></i> Registrado</span></td>
+                `;
+                tabela.appendChild(linha);
+            });
+        }
 
-          <div class="card">
-            <h3>Gaiola de Saca Azul</h3>
-            <p>280 unidades</p>
-            <div id="qr_azul"></div>
-            <button onclick="imprimirEtiqueta('Gaiola de Saca Azul', 280)">
-              🖨️ Imprimir Etiqueta
-            </button>
-          </div>
+        onValue(contagensRef, (snapshot) => {
+            atualizarTabela(snapshot);
+        });
 
-          <div class="card">
-            <h3>FM</h3>
-            <p>600 unidades</p>
-            <div id="qr_fm"></div>
-            <button onclick="imprimirEtiqueta('FM', 600)">
-              🖨️ Imprimir Etiqueta
-            </button>
-          </div>
+        inputScanner.addEventListener("keypress", async function (e) {
+            if (e.key !== "Enter") return;
+            
+            const codigo = this.value.trim();
+            if (!codigo) return;
 
-          <div class="card">
-            <h3>PA</h3>
-            <p>450 unidades</p>
-            <div id="qr_pa"></div>
-            <button onclick="imprimirEtiqueta('PA', 450)">
-              🖨️ Imprimir Etiqueta
-            </button>
-          </div>
+            // Bloqueia input temporariamente
+            this.disabled = true;
 
-          <div class="card">
-            <h3>CDGU</h3>
-            <p>450 unidades</p>
-            <div id="qr_cdgu"></div>
-            <button onclick="imprimirEtiqueta('CDGU', 450)">
-              🖨️ Imprimir Etiqueta
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      id="modal"
-      style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        justify-content: center;
-        align-items: center;
-      "
-    >
-      <div
-        style="
-          background: #fff;
-          padding: 20px;
-          border-radius: 10px;
-          min-width: 300px;
-          text-align: center;
-        "
-      >
-        <p id="modal-text"></p>
+            const jaExiste = await new Promise((resolve) => {
+                onValue(ref(database, 'contagens'), (snap) => {
+                    if (!snap.exists()) { resolve(false); return; }
+                    resolve(Object.values(snap.val()).some(item => item.codigoOriginal === codigo));
+                }, { onlyOnce: true });
+            });
 
-        <input
-          id="modal-input"
-          style="display: none; width: 100%; padding: 10px; margin: 10px 0"
-        />
+            if (jaExiste) {
+                // Procura a linha na tabela para destacar
+                const linhaDuplicada = document.querySelector(`tr[data-codigo="${codigo}"]`);
+                if(linhaDuplicada) {
+                    linhaDuplicada.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    linhaDuplicada.classList.add('highlight-duplicate');
+                    setTimeout(() => linhaDuplicada.classList.remove('highlight-duplicate'), 2500);
+                }
 
-        <div style="display: flex; gap: 10px; justify-content: center">
-          <button id="modal-ok">OK</button>
-          <button id="modal-cancel" style="background: #ef4444">
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  </body>
+                await abrirModal({ texto: "Esta etiqueta já foi lida!\nLocalizamos e destacamos ela na tabela abaixo." });
+                this.value = "";
+                this.disabled = false;
+                this.focus();
+                return;
+            }
+
+            const agora = new Date();
+            const partes = codigo.split("-");
+            const tipo = partes[0] || "DESCONHECIDO";
+            const unidades = partes[1] || "0";
+
+            try {
+                await push(contagensRef, {
+                    tipo,
+                    unidades,
+                    data: agora.toLocaleDateString("pt-BR"),
+                    hora: agora.toLocaleTimeString("pt-BR"),
+                    timestamp: agora.getTime(),
+                    codigoOriginal: codigo
+                });
+                
+                mostrarToast(`Sucesso: ${tipo} registrado!`);
+                this.value = "";
+                
+            } catch (error) {
+                console.error(error);
+                await abrirModal({ texto: "Erro ao comunicar com o servidor." });
+            } finally {
+                this.disabled = false;
+                this.focus();
+            }
+        });
+
+        window.limparRelatorio = async function () {
+            const senha = await abrirModal({
+                texto: "Acesso restrito. Digite a senha para autorizar a EXCLUSÃO dos dados:",
+                input: true,
+                inputType: 'password',
+                tipo: 'lock'
+            });
+
+            if (senha === false) return; // cancelou
+
+            // Verifica a senha no arquivo acesso.js
+            if (typeof SENHAS_SISTEMA === 'undefined' || !SENHAS_SISTEMA.includes(senha)) {
+                mostrarToast("Senha incorreta! Ação cancelada.", "error");
+                return;
+            }
+
+            const confirmar = await abrirModal({
+                texto: "Atenção: Você está prestes a apagar TODOS os dados de contagem. Deseja realmente continuar?",
+                tipo: 'warning'
+            });
+
+            if (!confirmar) return;
+
+            try {
+                await set(contagensRef, null);
+                mostrarToast("Relatório zerado com sucesso.");
+            } catch (error) {
+                console.error(error);
+                mostrarToast("Erro ao limpar os dados.", "error");
+            }
+        };
+    </script>
+</body>
 </html>
