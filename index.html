@@ -925,7 +925,25 @@
 
             let codigos = [];
             for (let i = 0; i < quantidade; i++) {
-                const codigo = `${tipo}-${unidades}-${Date.now()}-${i}`;
+                let codigo;
+                let codigoUnico = false;
+                let sufixo = i;
+
+                // Loop para assegurar que a etiqueta nova não existe na tabela "Código da Etiqueta"
+                while(!codigoUnico) {
+                    codigo = `${tipo}-${unidades}-${Date.now()}-${sufixo}`;
+                    
+                    // Verifica na tabela HTML se alguma linha possui este 'data-codigo'
+                    const jaExisteNaTabela = document.querySelector(`tr[data-codigo="${codigo}"]`);
+                    
+                    // Se existe na tabela ou se já foi gerado na fila atual, recria o sufixo aleatório
+                    if (jaExisteNaTabela || codigos.includes(codigo)) {
+                        sufixo = Math.floor(Math.random() * 1000000); 
+                    } else {
+                        codigoUnico = true;
+                    }
+                }
+
                 codigos.push(codigo);
                 janela.document.write(`
                     <div class="etiqueta">
