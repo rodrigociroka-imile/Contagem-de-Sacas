@@ -600,6 +600,10 @@
                             <span class="label">CDGU</span>
                             <span class="valor" id="cont-cdgu">0</span>
                         </div>
+                        <div class="item">
+                            <span class="label">TPCC</span>
+                            <span class="valor" id="cont-tpcc">0</span>
+                        </div>
                     </div>
 
                     <div class="total-linha">
@@ -782,7 +786,8 @@
             { id: "azul", titulo: "Gaiola Azul", qtd: 280, prefixo: "Gaiola de Saca Azul" },
             { id: "fm", titulo: "Saca FM", qtd: 600, prefixo: "FM" },
             { id: "pa", titulo: "Saca PA", qtd: 450, prefixo: "PA" },
-            { id: "cdgu", titulo: "Saca CDGU", qtd: 450, prefixo: "CDGU" }
+            { id: "cdgu", titulo: "Saca CDGU", qtd: 450, prefixo: "CDGU" },
+            { id: "tpcc", titulo: "Saca TPCC", qtd: 450, prefixo: "TPCC" }
         ];
 
         function renderizarEtiquetas() {
@@ -853,6 +858,7 @@
             const fm = d.getElementById("cont-fm").innerText;
             const pa = d.getElementById("cont-pa").innerText;
             const cdgu = d.getElementById("cont-cdgu").innerText;
+            const tpcc = d.getElementById("cont-tpcc").innerText;
             const total = d.getElementById("cont-total").innerText;
 
             let mensagem = `*📊 RELATÓRIO DE CONTAGEM DE SACAS 📊*\n\n`;
@@ -861,7 +867,8 @@
             mensagem += `🔵 Saca Azul: *${azul}*\n`;
             mensagem += `📦 FM: *${fm}*\n`;
             mensagem += `📦 PA: *${pa}*\n`;
-            mensagem += `📦 CDGU: *${cdgu}*\n\n`;
+            mensagem += `📦 CDGU: *${cdgu}*\n`;
+            mensagem += `📦 TPCC: *${tpcc}*\n\n`;
             mensagem += `*TOTAL GERAL: ${total} UNIDADES*\n\n`;
             mensagem += `_Gerado em: ${new Date().toLocaleString("pt-BR")}_`;
 
@@ -980,7 +987,7 @@
         const contagensRef = ref(database, 'contagens');
 
         function atualizarResumo(dados) {
-            const contagem = { branca: 0, fm: 0, amarela: 0, azul: 0, pa: 0, cdgu: 0 };
+            const contagem = { branca: 0, fm: 0, amarela: 0, azul: 0, pa: 0, cdgu: 0, tpcc: 0 };
 
             if (dados) {
                 Object.values(dados).forEach(item => {
@@ -993,6 +1000,7 @@
                     else if (tipo.includes("AZUL")) contagem.azul += qtd;
                     else if (tipo === "PA") contagem.pa += qtd;
                     else if (tipo === "CDGU") contagem.cdgu += qtd;
+                    else if (tipo === "TPCC") contagem.tpcc += qtd;
                 });
             }
 
@@ -1004,6 +1012,7 @@
             document.getElementById("cont-azul").textContent = contagem.azul;
             document.getElementById("cont-pa").textContent = contagem.pa;
             document.getElementById("cont-cdgu").textContent = contagem.cdgu;
+            document.getElementById("cont-tpcc").textContent = contagem.tpcc;
             document.getElementById("cont-total").textContent = total.toLocaleString("pt-BR");
         }
 
