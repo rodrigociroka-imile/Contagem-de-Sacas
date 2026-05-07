@@ -575,7 +575,19 @@
                 </div>
 
                 <div id="resumo-contagem" class="resumo-contagem">
-                    <div class="resumo-grid">                 
+                    <div class="resumo-grid">
+                        <div class="item">
+                            <span class="label">Saca Branca</span>
+                            <span class="valor" id="cont-branca">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">Saca Amarela</span>
+                            <span class="valor" id="cont-amarela">0</span>
+                        </div>
+                        <div class="item">
+                            <span class="label">Saca Azul</span>
+                            <span class="valor" id="cont-azul">0</span>
+                        </div>
                         <div class="item">
                             <span class="label">FM</span>
                             <span class="valor" id="cont-fm">0</span>
@@ -769,6 +781,9 @@
 
         // Geração da UI das Etiquetas
         const etiquetasData = [
+            { id: "branca", titulo: "Gaiola Branca", qtd: 280, prefixo: "Gaiola de Saca Branca" },
+            { id: "amarela", titulo: "Gaiola Amarela", qtd: 280, prefixo: "Gaiola de Saca Amarela" },
+            { id: "azul", titulo: "Gaiola Azul", qtd: 280, prefixo: "Gaiola de Saca Azul" },
             { id: "fm", titulo: "Saca FM", qtd: 600, prefixo: "FM" },
             { id: "pa", titulo: "Saca PA", qtd: 450, prefixo: "PA" },
             { id: "cdgu", titulo: "Saca CDGU", qtd: 450, prefixo: "CDGU" },
@@ -837,6 +852,9 @@
 
             // Capturar dados do painel de resumo
             const d = document;
+            const branca = d.getElementById("cont-branca").innerText;
+            const amarela = d.getElementById("cont-amarela").innerText;
+            const azul = d.getElementById("cont-azul").innerText;
             const fm = d.getElementById("cont-fm").innerText;
             const pa = d.getElementById("cont-pa").innerText;
             const cdgu = d.getElementById("cont-cdgu").innerText;
@@ -844,6 +862,9 @@
             const total = d.getElementById("cont-total").innerText;
 
             let mensagem = `*📊 RELATÓRIO DE CONTAGEM DE SACAS 📊*\n\n`;
+            mensagem += `⚪ Saca Branca: *${branca}*\n`;
+            mensagem += `🟡 Saca Amarela: *${amarela}*\n`;
+            mensagem += `🔵 Saca Azul: *${azul}*\n`;
             mensagem += `📦 FM: *${fm}*\n`;
             mensagem += `📦 PA: *${pa}*\n`;
             mensagem += `📦 CDGU: *${cdgu}*\n`;
@@ -966,14 +987,17 @@
         const contagensRef = ref(database, 'contagens');
 
         function atualizarResumo(dados) {
-            const contagem = { fm: 0,  pa: 0, cdgu: 0, tpcc: 0 };
+            const contagem = { branca: 0, fm: 0, amarela: 0, azul: 0, pa: 0, cdgu: 0, tpcc: 0 };
 
             if (dados) {
                 Object.values(dados).forEach(item => {
                     const tipo = (item.tipo || "").toUpperCase().trim();
                     const qtd = Number(item.unidades) || 0;
 
-                    if (tipo.includes("FM")) contagem.fm += qtd; 
+                    if (tipo.includes("BRANCA")) contagem.branca += qtd;
+                    else if (tipo === "FM") contagem.fm += qtd;
+                    else if (tipo.includes("AMARELA")) contagem.amarela += qtd;
+                    else if (tipo.includes("AZUL")) contagem.azul += qtd;
                     else if (tipo === "PA") contagem.pa += qtd;
                     else if (tipo === "CDGU") contagem.cdgu += qtd;
                     else if (tipo === "TPCC") contagem.tpcc += qtd;
